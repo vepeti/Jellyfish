@@ -111,7 +111,7 @@ This will generate the following output:
 
 ## Built in functions
 Jellyfish supports some simple functions. You can call these in template file with a special string: {{ [@variable] | function}}
-The engine is not sensitive to whitespaces.
+The function blocks are not sensitive to whitespaces.
 
 Example:
 ```
@@ -198,3 +198,69 @@ Example:
 {{ [@variable] | count }} // returns number of elements
 {{ [@variable] | join(-) }} // returns all elements of array, separated with "-"
 ```
+### Other functions
+- default - set default value to a variable, if it doesn't exist
+
+Example:
+```
+{{ [@variable] | default(abcde) }}
+```
+
+## Conditions
+Jellyfish supports basic conditional blocks in template. If the condition's final value is true, the content between the {{ if }} and {{ endif }} will be printed to the output. Else print nothing. In the condition section, the engine uses the PHP's eval() function, so you can use simple tests, like (10>2), or built-in PHP functions. Of course, you can test your template variables and array elements too. The conditional blocks have a special synthax. See below:
+The condition blocks are not sensitive to whitespaces.
+Note: The nested conditions actually doesn't work.
+
+Example 1:
+```
+{{ if (10>5) }}
+<u><b>It's true</u></b>
+{{ endif }}
+
+```
+Because the test's value is true, this will generate the following output:
+```
+<u><b>It's true</u></b>
+```
+
+Example 2:
+```
+{{ if (2<=5) }}
+<b>Printed text1</u>
+<div>Printed text2</div>
+{{endif}}
+```
+Because the test's value is true, this will generate the following output:
+```
+<b>Printed text1</u>
+<div>Printed text2</div>
+```
+
+Of course, you can use your own template variables:
+
+Example 3:
+```
+{{ if ([@variable]=="aaa") }}
+<li>{{ [@variable] | uc }}</li>
+{{endif}}
+```
+In this case, if the @variable's value is "aaa", then printed with fully uppecase format.
+
+You can use multiple tests, if needed:
+
+Example 4:
+```
+{{ if (([@element]>5) && ([@other_variable]<10)) }}
+Multiple conditions working!
+{{ endif }}
+```
+
+You can use built-in functions in the conditions.
+
+Example 5:
+```
+{{ if ({{ [@number] | sqrt }}>3) }}
+Printed text
+{{ endif }}
+```
+In this case, Jellyfish first calculates the square root of @number, then run tests. If the value greater then 3, the block's content will be printed.
