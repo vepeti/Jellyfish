@@ -264,3 +264,56 @@ Printed text
 {{ endif }}
 ```
 In this case, Jellyfish first calculates the square root of @number, then run tests. If the value greater then 3, the block's content will be printed.
+
+## For loops
+With for loop, you can iterate over template arrays. It works for simple and multidimensional arrays too. You can use two types of for. The first doesn't use key variable, the second does. Built-in functions and conditions works too inside the loop's block. You can use custom names for loop variable and key. If you loop a single variable instead array, Jellyfish splits to characters, and loop over them.
+Note: Nested loops are not supported!
+
+Example 1:
+If you have an arry, named "myarray", with following elements: 1, 2, 3, 4, 5
+```
+{{ for element in [@myarray]}}
+<li>[@element]</li>
+{{endfor}}
+```
+This will generate the following output:
+```
+<li>1</li>
+<li>2</li>
+<li>3</li>
+<li>4</li>
+<li>5</li>
+```
+
+Example 2:
+If you have an array, named "myarray2" with following elements: a,b,c,d,e,f
+```
+{{ for key=>item in [@myarray2]}}
+<b>[@key]->[@item]</b>
+{{endfor}}
+```
+This will generate the following output:
+```
+<b>0->a</b>
+<b>1->b</b>
+<b>2->c</b>
+<b>3->d</b>
+<b>4->e</b>
+<b>5->f</b>
+```
+
+Example 3:
+If you have a string, named "string", and value: "value":
+```
+{{ for char in [@string]}}
+<i>[@char]</i>
+{{endfor}}
+```
+This will generate the following output:
+```
+<i>v</i>
+<i>a</i>
+<i>l</i>
+<i>u</i>
+<i>e</i>
+```
