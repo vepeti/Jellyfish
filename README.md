@@ -48,7 +48,7 @@ That's all!
 # Template files
 Jellyfish supports some of useful template methods, like inner functions, conditions or loops. To use this, create a simple html file.
 
-## Use variables
+## Variables
 From the previous example, we will use those template variables. You can refer to a variable with the [@varname] syntax.
 
 Example:
@@ -80,8 +80,23 @@ This will generate the following output:
 <li>testvar</li>
 </ul>
 ```
+There is possible to define variables in template file too. You can add single or multiple variables in a block.
+First these blocks run, so you can use the added variables before the declaration.
+These blocks are not sensitive to whitespaces.
 
-## Use array elements
+Example 1:
+```
+{{ var x = 15 }}
+```
+Now you can call [@x] variable everywhere
+
+Example 2:
+```
+{{ var a,b,c=10,test,test2 }}
+```
+Now you can use all of created variables in template.
+
+## Array elements
 Same as simple variables, you can use array elements everywhere. Don't forget the index.
 
 Example:
@@ -94,6 +109,15 @@ This will generate the following output:
 abc<br />
 ghi<br />
 ```
+
+There is possible to define simple arrays in template file. First these blocks run, so you can use the added arrays before the declaration.
+These blocks are not sensitive to whitespaces.
+
+Example:
+```
+{{ array test=[10,35,text1,74] }}
+```
+Now you can use [@test] array.
 
 ## Multidimensional arrays
 This is the same as simple arrays, just print all of indexes.
@@ -316,4 +340,34 @@ This will generate the following output:
 <i>l</i>
 <i>u</i>
 <i>e</i>
+```
+
+## Include
+
+You can include another template files. The included templates parsed too, like the parent.
+
+Example:
+```
+{{ include 'other_template.tpl' }}
+```
+
+## Macros
+Macros are predefined blocks, with custom variables. Like functions in programming languages. You can define and call macros everywhere in template.
+The macro blocks are not sensitive to whitespaces.
+
+Example:
+```
+{{ macro formatted_text(color, size, family, text) }}
+<font color=[@color] family=[@family] size=[@size]>[@text]</font>
+{{ endmacro }}
+```
+Now you can use this macro with 'call' block:
+
+Example:
+```
+{{ call testmacro(red,12, Verdana, bigtext) }}
+```
+This will generate the following output:
+```
+<font color=red family=Verdana size=12>bigtext</font>
 ```
