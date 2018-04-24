@@ -18,7 +18,7 @@ public function set($key, $value)
 
 public function output()
 {
-if (!file_exists($this->file))
+if (!file_exists($this->file)) 
 {
     return "Error loading template file ($this->file).";
 }
@@ -26,7 +26,7 @@ $output = file_get_contents($this->file);
 
 // INCLUDE OTHER TEMPLATES
 $output=$this->include_template($output);
-	
+
 // ADD MACRO
 $output=$this->add_macro($output);
 
@@ -59,11 +59,11 @@ $string=preg_replace_callback("/\{\{ ?if (\(.+\)) ?}}(.+)\{\{ ?endif ?}}/sU", fu
     $cond=eval("return $condstring;");
     if ($cond)
     {
-        return $found[2];
+	return $found[2];
     }
     else
     {
-        return NULL;
+	return NULL;
     }
 }, $string);
 return $string;
@@ -76,29 +76,29 @@ $string=preg_replace_callback("/\{\{ ?for ((\w+)=>)?(\w+) in \[@(.+)] ?}}(.+)\{\
     $row=NULL;
     if (!is_array($this->values[$found[4]]))
     {
-        $myarray=str_split($this->values[$found[4]]);
+	$myarray=str_split($this->values[$found[4]]);
     }
     else
     {
-        $myarray=$this->values[$found[4]];
+	$myarray=$this->values[$found[4]];
     }
     foreach($myarray as $key=>$element)
     {
-        if (preg_match("/\[@".$found[3]."](\[.+])/", $found[5]))
-        {
-            $index=preg_replace_callback("/^.*\[@".$found[3]."](\[.+]).*$/sU", function($dim){return $dim[1];}, $found[5]);
-            $str='return $element'.$index.';';
-            $var=eval($str);
-            $string=preg_replace("/\[@".$found[3]."](\[.+])/U", $var, $found[5]);
-            $string=preg_replace("/\[@".$found[2]."]/U", $key, $string);
-            $row.=$string;
-        }
-        else
-        {
-            $string=preg_replace("/\[@".$found[3]."]/", $element, $found[5]);
-            $string=preg_replace("/\[@".$found[2]."]/", $key, $string);
-            $row.=$string;
-        }
+	if (preg_match("/\[@".$found[3]."](\[.+])/", $found[5]))
+	{
+	    $index=preg_replace_callback("/^.*\[@".$found[3]."](\[.+]).*$/sU", function($dim){return $dim[1];}, $found[5]);
+	    $str='return $element'.$index.';';
+	    $var=eval($str);
+	    $string=preg_replace("/\[@".$found[3]."](\[.+])/U", $var, $found[5]);
+	    $string=preg_replace("/\[@".$found[2]."]/U", $key, $string);
+	    $row.=$string;
+	}
+	else
+	{
+	    $string=preg_replace("/\[@".$found[3]."]/", $element, $found[5]);
+	    $string=preg_replace("/\[@".$found[2]."]/", $key, $string);
+	    $row.=$string;
+	}
     }
 $row=$this->condition($row);
 return $row;
@@ -113,11 +113,11 @@ $string=preg_replace_callback("/\{\{ ?(.+?) ?\| ?default\((.*)\) ?}}/U", functio
 {
     if (isset($this->values[$found[1]]))
     {
-        return $this->values[$found[1]];
+	return $this->values[$found[1]];
     }
     else
     {
-        return $found[2];
+	return $found[2];
     }
 }, $string);
 
@@ -128,34 +128,34 @@ $string=preg_replace_callback("/\{\{ ?\[@(.+?)] ?\| ?(
 {
     if (is_array($this->values[$found[1]]))
     {
-        switch ($found[2])
-        {
-            case "count":
-                return count($this->values[$found[1]]);
-                break;
-            case "rand":
-                return array_rand($this->values[$found[1]]);
-                break;
-            case "first":
-                return reset($this->values[$found[1]]);
-                break;
-            case "last":
-                return end($this->values[$found[1]]);
-                break;
-            case "min":
-                return min($this->values[$found[1]]);
-                break;
-            case "max":
-                return end($this->values[$found[1]]);
-                break;
-            case "join($found[3])":
-                return implode($found[3], $this->values[$found[1]]);
-                break;
-        }
+	switch ($found[2])
+	{
+	    case "count":
+		return count($this->values[$found[1]]);
+		break;
+	    case "rand":
+		return array_rand($this->values[$found[1]]);
+		break;
+	    case "first":
+		return reset($this->values[$found[1]]);
+		break;
+	    case "last":
+		return end($this->values[$found[1]]);
+		break;
+	    case "min":
+		return min($this->values[$found[1]]);
+		break;
+	    case "max":
+		return end($this->values[$found[1]]);
+		break;
+	    case "join($found[3])":
+		return implode($found[3], $this->values[$found[1]]);
+		break;
+	}
     }
     else
     {
-        return "Not an Array";
+	return "Not an Array";
     }
 }, $string);
 
@@ -195,13 +195,13 @@ return $string;
 private function main_subst($string)
 {
 $string=preg_replace_callback("/\[@(.+)]((\[.+]){2,})/", function($found)
-{return eval('return $this->values[$found[1]]'."$found[2];");}, $string);
+{return eval('return $this->values[$found[1]]'."$found[2];") ? eval('return $this->values[$found[1]]'."$found[2];") : NULL;}, $string);
 
 $string=preg_replace_callback("/\[@(.+)]\[(.+)]/U", function($found)
-{return $this->values[$found[1]][$found[2]];}, $string);
-
+{return isset($this->values[$found[1]][$found[2]]) ? $this->values[$found[1]][$found[2]] : NULL;}, $string);
+    
 $string=preg_replace_callback("/\[@(.+)]/U", function($found)
-{return $this->values[$found[1]];}, $string);
+{return isset($this->values[$found[1]]) ? $this->values[$found[1]] : NULL;}, $string);
 return $string;
 }
 
@@ -217,7 +217,7 @@ $string=preg_replace_callback("/\{\{ ?var (.+?)=(.+?) ?}}/", function($found)
 
     foreach($names as $key=>$value)
     {
-        $this->set($value, $values[$key]);
+	$this->set($value, $values[$key]);
     }
 
 return NULL;}, $string);
@@ -237,7 +237,7 @@ $string=preg_replace_callback("/\{\{ ?array (\w+?)= ?\[(.+?)\] ?}}/", function($
 
     foreach($values as $value)
     {
-        array_push($arrayname, $value);
+	array_push($arrayname, $value);
     }
     $this->set($found[1], $arrayname);
 return NULL;}, $string);
@@ -251,7 +251,7 @@ $string=preg_replace_callback("/\{\{ ?include '(.+?)' ?}}/", function($found)
     $newfile=NULL;
     if (file_exists($found[1]))
     {
-        $newfile=file_get_contents($found[1]);
+	$newfile=file_get_contents($found[1]);
     }
 return $newfile;}, $string);
 return $string;
@@ -268,16 +268,111 @@ $string=preg_replace_callback("/\{\{ ?macro (\w+?)\((.+?)\) ?}}(.+){{ ?endmacro 
     $this->macros[$found[1]]=$macro;
 return NULL;}, $string);
 return $string;
+}<?php
+2
+​
+3
+class template
+4
+{
+5
+protected $file;
+6
+protected $values = array();
+7
+protected $macros = array();
+8
+​
+9
+public function __construct($file)
+10
+{
+11
+    $this->file = $file;
+12
 }
+13
+​
+14
+public function set($key, $value)
+15
+{
+16
+    $this->values[$key] = $value;
+17
+}
+18
+​
+19
+public function output()
+20
+{
+21
+if (!file_exists($this->file))
+22
+{
+23
+    return "Error loading template file ($this->file).";
+24
+}
+25
+$output = file_get_contents($this->file);
+26
+​
+27
+// INCLUDE OTHER TEMPLATES
+28
+$output=$this->include_template($output);
+29
+        
+30
+// ADD MACRO
+31
+$output=$this->add_macro($output);
+32
+​
+33
+// CALL MACRO
+34
+$output=$this->call_macro($output);
+35
+​
+36
+// ADD VARS
+37
+$output=$this->add_vars($output);
+38
+​
+39
+// ADD ARRAYS
+40
+$output=$this->add_array($output);
+41
+​
+42
+// LOOP IN ARRAY
+43
+$output=$this->loop($output);
+44
+​
+45
+// CONDITION
+46
+$output=$this->condition($output);
+47
+​
+48
+// FILTERS
+49
+$output=$this->filters($output);
 
 private function call_macro($string)
 {
 $string=preg_replace_callback("/\{\{ ?call (\w+?)\((.+?)\) ?}}/", function($found)
 {
-    $temparray=preg_replace("/\s/", "", $found[2]);
+    $temparray=preg_replace("/,\s*?/", ",", $found[2]);
     $temparray=explode(",", $temparray);
-
-    $inserted=$this->macros[$found[1]]->call($found[1], $temparray);
+    $inserted=isset($this->macros[$found[1]]) ? $this->macros[$found[1]]->call($found[1], $temparray) : NULL;
 return $inserted;}, $string);
 return $string;
 }
@@ -304,15 +399,16 @@ $this->body=$body;
 
 public function call($name, $property_values=array())
 {
+
 foreach ($this->properties as $key=>$propname)
 {
     $this->values[$propname]=$property_values[$key];
 }
 
-$this->body=preg_replace_callback("/\[@(.+?)]/", function($found)
+$return_string=preg_replace_callback("/\[@(.+?)]/", function($found)
 {
     return $this->values[$found[1]];}, $this->body);
-return $this->body;
+return $return_string;
 }
 
 }
