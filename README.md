@@ -357,17 +357,17 @@ The macro blocks are not sensitive to whitespaces.
 
 Example:
 ```
-{{ macro formatted_text(color, size, family, text) }}
-<font color=[@color] family=[@family] size=[@size]>[@text]</font>
+{{ macro formatted_text(color, size, face, text) }}
+<font color="[@color]" face="[@face]" size=[@size]>[@text]</font>
 {{ endmacro }}
 ```
 Now you can use this macro with 'call' block:
 
 Example:
 ```
-{{ call testmacro(red,12, Verdana, bigtext) }}
+{{ call formatted_text(red,12, Arial, Custom text) }}
 ```
 This will generate the following output:
 ```
-<font color=red family=Verdana size=12>bigtext</font>
+<font color="red" family="Arial" size=12>Custom text</font>
 ```
