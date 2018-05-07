@@ -344,7 +344,7 @@ This will generate the following output:
 
 ## Include
 
-You can include another template files. The included templates parsed too, like the parent.
+You can include another template files. The included templates parsed too, like the parent. The chained includes are supported too, unlimited depth.
 
 Example:
 ```
