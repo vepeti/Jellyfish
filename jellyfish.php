@@ -51,6 +51,7 @@ $output=$this->filters($output);
 return $output;
 }
 
+// CONDITION
 private function condition($string)
 {
 $string=preg_replace_callback("/\{\{ ?if (\(.+\)) ?}}(.+)\{\{ ?endif ?}}/sU", function ($found)
@@ -59,16 +60,29 @@ $string=preg_replace_callback("/\{\{ ?if (\(.+\)) ?}}(.+)\{\{ ?endif ?}}/sU", fu
     $cond=eval("return $condstring;");
     if ($cond)
     {
-        return $found[2];
+        if (preg_match("/\{\{ ?else ?}}/", $found[2]))
+        {
+            $truestring=preg_replace_callback("/^(.*)\{\{ ?else ?}}.*$/s", function ($innerstring)
+            {return $innerstring[1];}, $found[2]);
+            return $truestring;
+        }
+        else return $found[2];
     }
     else
     {
-        return NULL;
+        if (preg_match("/\{\{ ?else ?}}/", $found[2]))
+        {
+            $falsestring=preg_replace_callback("/^.*\{\{ ?else ?}}(.*)$/s", function ($innerstring)
+            {return $innerstring[1];}, $found[2]);
+            return $falsestring;
+        }
+        else return NULL;
     }
 }, $string);
 return $string;
 }
 
+// LOOP
 private function loop($string)
 {
 $string=preg_replace_callback("/\{\{ ?for ((\w+)=>)?(\w+) in \[@(.+)] ?}}(.+)\{\{ ?endfor ?}}/sU", function($found)
