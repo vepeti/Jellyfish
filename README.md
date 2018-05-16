@@ -231,7 +231,7 @@ Example:
 ```
 
 ## Conditions
-Jellyfish supports basic conditional blocks in template. If the condition's final value is true, the content between the {{ if }} and {{ endif }} will be printed to the output. Else print nothing. In the condition section, the engine uses the PHP's eval() function, so you can use simple tests, like (10>2), or built-in PHP functions. Of course, you can test your template variables and array elements too. The conditional blocks have a special synthax. See below:
+Jellyfish supports basic conditional blocks in template. If the condition's final value is true, the content between the {{ if }} and {{ endif }} will be printed to the output. Else print nothing. Optionally you can use else statement. In this case, the string between {{ else }} and {{ endif }} will be printed. In the condition section, the engine uses the PHP's eval() function, so you can use simple tests, like (10>2), or built-in PHP functions. Of course, you can test your template variables and array elements too. The conditional blocks have a special synthax. See below:
 The condition blocks are not sensitive to whitespaces.
 Note: The nested conditions actually doesn't work.
 
@@ -266,9 +266,11 @@ Example 3:
 ```
 {{ if ([@variable]=="aaa") }}
 <li>{{ [@variable] | uc }}</li>
+{{ else }}
+<li>Default value</li>
 {{endif}}
 ```
-In this case, if the @variable's value is "aaa", then printed with fully uppecase format.
+In this case, if the @variable's value is "aaa", then printed with fully uppecase format. Else, the "<li>Default value</li>" will be printed.
 
 You can use multiple tests, if needed:
 
