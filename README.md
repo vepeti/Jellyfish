@@ -270,7 +270,10 @@ Example 3:
 <li>Default value</li>
 {{endif}}
 ```
-In this case, if the @variable's value is "aaa", then printed with fully uppecase format. Else, the "<li>Default value</li>" will be printed.
+In this case, if the @variable's value is "aaa", then printed with fully uppecase format. Else, the following string will be printed:
+```
+<li>Default value</li>
+```
 
 You can use multiple tests, if needed:
 
