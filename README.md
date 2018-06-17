@@ -231,7 +231,7 @@ Example:
 ```
 
 ## Conditions
-Jellyfish supports basic conditional blocks in template. If the condition's final value is true, the content between the {{ if }} and {{ endif }} will be printed to the output. Else print nothing. Optionally you can use else statement. In this case, the string between {{ else }} and {{ endif }} will be printed. In the condition section, the engine uses the PHP's eval() function, so you can use simple tests, like (10>2), or built-in PHP functions. Of course, you can test your template variables and array elements too. The conditional blocks have a special synthax. See below:
+Jellyfish supports basic conditional blocks in template. If the condition's final value is true, the content between the {{ if }} and {{ endif }} will be printed to the output. Else print nothing. Optionally you can use elseif and else statements. In these case, the string between {{ elseif }} blocks or {{ else }} and {{ endif }} will be printed, like any programming languages. In the condition section, the engine uses the PHP's eval() function, so you can use simple tests, like (10>2), or built-in PHP functions. Of course, you can test your template variables and array elements too. The conditional blocks have a special synthax. See below:
 The condition blocks are not sensitive to whitespaces.
 Note: The nested conditions actually doesn't work.
 
@@ -275,9 +275,25 @@ In this case, if the @variable's value is "aaa", then printed with fully uppecas
 <li>Default value</li>
 ```
 
-You can use multiple tests, if needed:
+You can use "elseif" statements with no limit. The final "else" is not required:
 
 Example 4:
+```
+{{ if ([@variable]==0) }}
+<li>zero</li>
+{{ elseif ([@variable]>0) }}
+<li>positive</li>
+{{ elseif ([@variable]<0) }}
+<li>negative</li>
+{{ else }}
+<li>Not a number</li>
+{{endif}}
+```
+In this case, we run multiple test on variable. We first check if it is 0. If not, we check if is it positive or negative number. If not, finally we print that variable is not a number.
+
+You can use multiple tests, if needed:
+
+Example 5:
 ```
 {{ if (([@element]>5) && ([@other_variable]<10)) }}
 Multiple conditions working!
@@ -286,7 +302,7 @@ Multiple conditions working!
 
 You can use built-in functions in the conditions.
 
-Example 5:
+Example 6:
 ```
 {{ if ({{ [@number] | sqrt }}>3) }}
 Printed text
