@@ -1,6 +1,6 @@
 <?php
 
-class template
+class template extends main
 {
 protected $file;
 protected $values = array();
@@ -54,26 +54,47 @@ return $output;
 // CONDITION
 private function condition($string)
 {
-$string=preg_replace_callback("/\{\{ ?if (\(.+\)) ?}}(.+)\{\{ ?endif ?}}/sU", function ($found)
+$string=preg_replace_callback("/\{\{ ?if ?(\(.+\)) ?}}(.+)\{\{ ?endif ?}}/sU", function ($found)
 {
     $condstring=$this->filters($found[1]);
     $cond=eval("return $condstring;");
     if ($cond)
     {
-        if (preg_match("/\{\{ ?else ?}}/", $found[2]))
+        if (preg_match("/\{\{ ?else/", $found[2]))
         {
-            $truestring=preg_replace_callback("/^(.*)\{\{ ?else ?}}.*$/s", function ($innerstring)
-            {return $innerstring[1];}, $found[2]);
+            $truestring=preg_replace_callback("/^(.*?)\{\{ ?else.*$/s", function ($innerstring)
+                {return $innerstring[1];}, $found[2]);
             return $truestring;
         }
-        else return $found[2];
+        else
+        {
+            return $found[2];
+        }
     }
     else
     {
+        if (preg_match("/\{\{ ?elseif ?\(.+?\) ?}}/s", $found[2]))
+        {
+            preg_match_all("/\{\{ ?elseif ?\(.+?\) ?}}/s", $found[2], $matches);
+            $matches=$matches[0];
+            foreach ($matches as $block)
+            {
+                $condstring=preg_replace_callback("/^.+(\(.+\)).+$/", function ($innerfound)
+                    {return $innerfound[1];}, $block);
+                $condstring=$this->filters($condstring);
+                $cond=eval("return $condstring;");
+                if ($cond)
+                {
+                    $truestring=preg_replace_callback("/^.*\Q".$block."\E(.+?)(\{\{ ?else.*)?$/s", function ($innerstring)
+                        {return $innerstring[1];}, $found[2]);
+                    return $truestring;
+                }
+            }
+        }
         if (preg_match("/\{\{ ?else ?}}/", $found[2]))
         {
             $falsestring=preg_replace_callback("/^.*\{\{ ?else ?}}(.*)$/s", function ($innerstring)
-            {return $innerstring[1];}, $found[2]);
+                {return $innerstring[1];}, $found[2]);
             return $falsestring;
         }
         else return NULL;
@@ -262,10 +283,19 @@ private function include_template($string)
 {
 $string=preg_replace_callback("/\{\{ ?include '(.+?)' ?}}/", function($found)
 {
+    // substitue variables
+    $found[1]=$this->main_subst($found[1]);
     $newfile=NULL;
     if (file_exists($found[1]))
     {
-        $newfile=file_get_contents($found[1]);
+        if (pathinfo($found[1], PATHINFO_EXTENSION)=="tpl")
+        {
+            $newfile=file_get_contents($found[1]);
+        }
+        else
+        {
+            $newfile=include $found[1];
+        }
     }
 return $newfile;}, $string);
 
