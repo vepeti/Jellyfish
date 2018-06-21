@@ -133,6 +133,29 @@ This will generate the following output:
 <u>y</u>
 ```
 
+## Variable scopes
+Jellyfish doesn't support the variable inheritance, when you include a child template. But you can define local and global variables. Local variables available only from the same template. Global variables available from everywhere. So if you define a global variable in a child template, you can access it from the childs and parents too. You can define global variables and arrays too.
+Syntax: When you would like to define a global variable from PHP, you can use the "set" method. See above. The method has a third boolean parameter. When you set it to 1, the variable will be declared in global scope. If you don't set, the default value is 0.
+
+Example:
+```
+$template->set("global_var", "value", 1);
+```
+
+You can define global variables and arrays from template. Use the "global" keyword.
+
+Example:
+```
+{{ global var x=100 }}
+```
+
+[@x] variable will be a global variable.
+
+Example:
+```
+{{ global array nums=[1,2,3,4,5,6] }}
+```
+
 ## Built in functions
 Jellyfish supports some simple functions. You can call these in template file with a special string: {{ [@variable] | function}}
 The function blocks are not sensitive to whitespaces.
