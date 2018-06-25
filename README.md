@@ -256,7 +256,7 @@ Example:
 ## Conditions
 Jellyfish supports basic conditional blocks in template. If the condition's final value is true, the content between the {{ if }} and {{ endif }} will be printed to the output. Else print nothing. Optionally you can use elseif and else statements. In these case, the string between {{ elseif }} blocks or {{ else }} and {{ endif }} will be printed, like any programming languages. In the condition section, the engine uses the PHP's eval() function, so you can use simple tests, like (10>2), or built-in PHP functions. Of course, you can test your template variables and array elements too. The conditional blocks have a special synthax. See below:
 The condition blocks are not sensitive to whitespaces.
-Note: The nested conditions actually doesn't work.
+You can use nested conditions unlimited.
 
 Example 1:
 ```
