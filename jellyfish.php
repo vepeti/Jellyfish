@@ -85,9 +85,10 @@ $innerblock=preg_replace_callback("/.*(\Q".$innerif."\E.+?\{\{ ?endif ?}}).*/s",
     {return $found[1];}, $string);
 
 $processedblock=$this->condition($innerblock);
-$string=preg_replace("/\Q".$innerblock."\E/s", $processedblock, $string);
+$innerblock=preg_quote($innerblock);
+$string=preg_replace("|".$innerblock."|s", $processedblock, $string);
 }
-//echo $string;
+
 return $string;
 }
 
@@ -102,7 +103,16 @@ $string=preg_replace_callback("/(\{\{ ?if ?(\(.+?\)) ?}}(.+?)\{\{ ?endif ?}})/s"
     }
 
     $condstring=$this->filters($found[2]);
-    $cond=eval("return $condstring;");
+
+    try
+    {
+        $cond=eval("return $condstring;");
+    }
+    catch (ParseError $e)
+    {
+        $cond=0;
+    }
+
     if ($cond)
     {
         if (preg_match("/\{\{ ?else/", $found[3]))
@@ -127,7 +137,16 @@ $string=preg_replace_callback("/(\{\{ ?if ?(\(.+?\)) ?}}(.+?)\{\{ ?endif ?}})/s"
                 $condstring=preg_replace_callback("/^.+(\(.+\)).+$/", function ($innerfound)
                     {return $innerfound[1];}, $block);
                 $condstring=$this->filters($condstring);
-                $cond=eval("return $condstring;");
+
+                try
+                {
+                    $cond=eval("return $condstring;");
+                }
+                catch (ParseError $e)
+                {
+                    $cond=0;
+                }
+
                 if ($cond)
                 {
                     $truestring=preg_replace_callback("/^.*\Q".$block."\E(.+?)(\{\{ ?else.*)?$/s", function ($innerstring)
