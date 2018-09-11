@@ -238,7 +238,8 @@ Example:
 - last - returns the last element from array
 - min - returns the lowest element from array
 - max - returns the highest element from array
-- join(char) - Joins all elements from array, separated with char parameter
+- join(string) - Joins all elements from array, separated with string parameter
+- contains(string) - returns true if string value found in array, else returns false
 
 Example:
 ```
