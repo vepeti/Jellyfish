@@ -47,6 +47,9 @@ $output=$this->call_macro($output);
 // LOOP IN ARRAY
 $output=$this->loop($output);
 
+// NESETED LOOP
+$output=$this->nested_loop($output);
+
 // CONDITION
 $output=$this->condition($output);
 
@@ -170,16 +173,21 @@ return $string;
 // LOOP
 private function loop($string)
 {
-$string=preg_replace_callback("/\{\{ ?for ((\w+)=>)?(\w+) in \[@(.+)] ?}}(.+)\{\{ ?endfor ?}}/sU", function($found)
+$string=preg_replace_callback("/(\{\{ ?for ((\w+)=>)?(\w+) in \[@(.+)] ?}}(.+)\{\{ ?endfor ?}})/sU", function($found)
 {
-    $row=NULL;
-    if (!is_array($this->values[$found[4]]))
+    if (preg_match("/\{\{ for (\w+?=>)?\w+ in \[@\w+\] ?}}/s",$found[6]))
     {
-        $myarray=str_split($this->values[$found[4]]);
+        return $found[1];
+    }
+
+    $row=NULL;
+    if (!is_array($this->values[$found[5]]))
+    {
+        $myarray=str_split($this->values[$found[5]]);
     }
     else
     {
-        $myarray=$this->values[$found[4]];
+        $myarray=$this->values[$found[5]];
     }
 
     if ((count($myarray)==1) && (isset($myarray[0])) && ($myarray[0]==""))
@@ -187,7 +195,7 @@ $string=preg_replace_callback("/\{\{ ?for ((\w+)=>)?(\w+) in \[@(.+)] ?}}(.+)\{\
         return NULL;
     }
 
-    if (preg_match("/\[@".$found[3]."](\[.+])/", $found[5]))
+    if (preg_match("/\[@".$found[4]."](\[.+])/", $found[6]))
     {
         if ((!isset($myarray[0])) || (!is_array($myarray[0])))
         {
@@ -200,12 +208,12 @@ $string=preg_replace_callback("/\{\{ ?for ((\w+)=>)?(\w+) in \[@(.+)] ?}}(.+)\{\
 
     foreach($myarray as $key=>$element)
     {
-        if (preg_match("/\[@".$found[3]."](\[.+])/", $found[5]))
+        if (preg_match("/\[@".$found[4]."](\[.+])/", $found[6]))
         {
-            $innerblock=$found[5];
-            while (preg_match("/\[@".$found[3]."](\[.+])/", $innerblock))
+            $innerblock=$found[6];
+            while (preg_match("/\[@".$found[4]."](\[.+])/", $innerblock))
             {
-                $innerblock=preg_replace_callback("/\[@".$found[3]."](\[.+])/sU", function($dim) use($element)
+                $innerblock=preg_replace_callback("/\[@".$found[4]."](\[.+])/sU", function($dim) use($element)
                 {
                     return eval('return $element'.$dim[1].';');
                 }, $innerblock, 1);
@@ -214,14 +222,52 @@ $string=preg_replace_callback("/\{\{ ?for ((\w+)=>)?(\w+) in \[@(.+)] ?}}(.+)\{\
         }
         else
         {
-            $string=preg_replace("/\[@".$found[3]."]/", $element, $found[5]);
-            $string=preg_replace("/\[@".$found[2]."]/", $key, $string);
+            $string=preg_replace("/\[@".$found[4]."]/", $element, $found[6]);
+            $string=preg_replace("/\[@".$found[3]."]/", $key, $string);
             $row.=$string;
         }
     }
 $row=$this->condition($row);
 return $row;
 }, $string);
+return $string;
+}
+
+// NESTED LOOP
+private function nested_loop($string)
+{
+$innerfor=NULL;
+$innerblock=NULL;
+$counter=0;
+
+while (preg_match("/\{\{ for (\w+?=>)?\w+ in \[@\w+\] ?}}/", $string))
+{
+$lines=explode("\n", $string);
+
+foreach ($lines as $x)
+{
+    if (preg_match("/\{\{ for (\w+?=>)?\w+ in \[@\w+\] ?}}/", $x))
+    {
+        $innerfor=$x;
+    }
+
+    if (preg_match("/\{\{ ?endfor ?}}/", $x))
+    {
+        break;
+    }
+}
+
+$innerblock=preg_replace_callback("~.*(\Q".$innerfor."\E.+?\{\{ ?endfor ?}}).*~s", function ($found)
+    {return $found[1];}, $string);
+
+$processedblock=$this->loop($innerblock);
+$innerblock=preg_quote($innerblock);
+$string=preg_replace("|".$innerblock."|s", $processedblock, $string);
+
+$counter++;
+if ($counter>100) break;
+}
+
 return $string;
 }
 
