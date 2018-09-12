@@ -46,7 +46,7 @@ $page->output();
 That's all!
 
 # Template files
-Jellyfish supports some of useful template methods, like inner functions, conditions or loops. To use this, create a simple html file.
+Jellyfish supports some of useful template methods, like inner functions, conditions or loops. To use this, create a simple file, for example in html format.
 
 ## Variables
 From the previous example, we will use those template variables. You can refer to a variable with the [@varname] syntax.
@@ -132,6 +132,7 @@ This will generate the following output:
 <i>3</i>
 <u>y</u>
 ```
+Actually you can not create multidimensional arrays, only can call them.
 
 ## Variable scopes
 Jellyfish doesn't support the variable inheritance, when you include a child template. But you can define local and global variables. Local variables available only from the same template. Global variables available from everywhere. So if you define a global variable in a child template, you can access it from the childs and parents too. You can define global variables and arrays too.
