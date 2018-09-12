@@ -132,7 +132,7 @@ This will generate the following output:
 <i>3</i>
 <u>y</u>
 ```
-Actually you can not create multidimensional arrays, only can call them.
+Actually you can not create multidimensional arrays in template file, only can call them.
 
 ## Variable scopes
 Jellyfish doesn't support the variable inheritance, when you include a child template. But you can define local and global variables. Local variables available only from the same template. Global variables available from everywhere. So if you define a global variable in a child template, you can access it from the childs and parents too. You can define global variables and arrays too.
