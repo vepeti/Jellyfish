@@ -336,8 +336,7 @@ Printed text
 In this case, Jellyfish first calculates the square root of @number, then run tests. If the value greater then 3, the block's content will be printed.
 
 ## For loops
-With for loop, you can iterate over template arrays. It works for simple and multidimensional arrays too. You can use two types of for. The first doesn't use key variable, the second does. Built-in functions and conditions works too inside the loop's block. You can use custom names for loop variable and key. If you loop a single variable instead array, Jellyfish splits to characters, and loop over them.
-Note: Nested loops are not supported!
+With for loop, you can iterate over template arrays. It works for simple and multidimensional arrays too. You can use two types of for. The first doesn't use key variable, the second does. Built-in functions and conditions works too inside the loop's block. You can use custom names for loop variable and key. If you loop a single variable instead array, Jellyfish splits to characters, and loop over them. Nested loops are supported too.
 
 Example 1:
 If you have an arry, named "myarray", with following elements: 1, 2, 3, 4, 5
