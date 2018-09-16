@@ -68,23 +68,23 @@ private function nested_condition($string)
 $innerif=NULL;
 $innerblock=NULL;
 
-while (preg_match("/\{\{ if \(.+?\) ?}}/", $string))
+while (preg_match("/\{% if \(.+?\) ?%}/", $string))
 {
 $lines=explode("\n", $string);
 foreach ($lines as $x)
 {
-    if (preg_match("/\{\{ ?if \(.+?\) ?}}/", $x))
+    if (preg_match("/\{% ?if \(.+?\) ?%}/", $x))
     {
         $innerif=$x;
     }
 
-    if (preg_match("/\{\{ ?endif ?}}/", $x))
+    if (preg_match("/\{% ?endif ?%}/", $x))
     {
         break;
     }
 }
 
-$innerblock=preg_replace_callback("~.*(\Q".$innerif."\E.+?\{\{ ?endif ?}}).*~s", function ($found)
+$innerblock=preg_replace_callback("~.*(\Q".$innerif."\E.+?\{% ?endif ?%}).*~s", function ($found)
     {return $found[1];}, $string);
 
 $processedblock=$this->condition($innerblock);
@@ -98,13 +98,12 @@ return $string;
 // CONDITION
 private function condition($string)
 {
-$string=preg_replace_callback("/(\{\{ ?if ?(\(.+?\)) ?}}(.+?)\{\{ ?endif ?}})/s", function ($found)
+$string=preg_replace_callback("/(\{% ?if ?(\(.+?\)) ?%}(.+?)\{% ?endif ?%})/s", function ($found)
 {
-    if (preg_match("/\{\{ ?if \(.+?\) ?}}/s",$found[3]))
+    if (preg_match("/\{% ?if \(.+?\) ?%}/s",$found[3]))
     {
         return $found[1];
     }
-
     $condstring=$this->filters($found[2], true);
 
     try
@@ -118,9 +117,9 @@ $string=preg_replace_callback("/(\{\{ ?if ?(\(.+?\)) ?}}(.+?)\{\{ ?endif ?}})/s"
 
     if ($cond)
     {
-        if (preg_match("/\{\{ ?else/", $found[3]))
+        if (preg_match("/\{% ?else/", $found[3]))
         {
-            $truestring=preg_replace_callback("/^(.*?)\{\{ ?else.*$/s", function ($innerstring)
+            $truestring=preg_replace_callback("/^(.*?)\{% ?else.*$/s", function ($innerstring)
                 {return $innerstring[1];}, $found[3]);
             return $truestring;
         }
@@ -131,9 +130,9 @@ $string=preg_replace_callback("/(\{\{ ?if ?(\(.+?\)) ?}}(.+?)\{\{ ?endif ?}})/s"
     }
     else
     {
-        if (preg_match("/\{\{ ?elseif ?\(.+?\) ?}}/s", $found[3]))
+        if (preg_match("/\{% ?elseif ?\(.+?\) ?%}/s", $found[3]))
         {
-            preg_match_all("/\{\{ ?elseif ?\(.+?\) ?}}/s", $found[3], $matches);
+            preg_match_all("/\{% ?elseif ?\(.+?\) ?%}/s", $found[3], $matches);
             $matches=$matches[0];
             foreach ($matches as $block)
             {
@@ -158,9 +157,9 @@ $string=preg_replace_callback("/(\{\{ ?if ?(\(.+?\)) ?}}(.+?)\{\{ ?endif ?}})/s"
                 }
             }
         }
-        if (preg_match("/\{\{ ?else ?}}/", $found[3]))
+        if (preg_match("/\{% ?else ?%}/", $found[3]))
         {
-            $falsestring=preg_replace_callback("/^.*\{\{ ?else ?}}(.*)$/s", function ($innerstring)
+            $falsestring=preg_replace_callback("/^.*\{% ?else ?%}(.*)$/s", function ($innerstring)
                 {return $innerstring[1];}, $found[3]);
             return $falsestring;
         }
@@ -173,9 +172,9 @@ return $string;
 // LOOP
 private function loop($string)
 {
-$string=preg_replace_callback("/(\{\{ ?for ((\w+)=>)?(\w+) in \[@(.+)] ?}}(.+)\{\{ ?endfor ?}})/sU", function($found)
+$string=preg_replace_callback("/(\{% ?for ((\w+?)=>)?(\w+?) in \{\{ ?(.+?) ?}} ?%}(.+?)\{% ?endfor ?%})/s", function($found)
 {
-    if (preg_match("/\{\{ for (\w+?=>)?\w+ in \[@\w+\] ?}}/s",$found[6]))
+    if (preg_match("/\{% for (\w+?=>)?\w+ in \{\{ ?\w+? ?}} ?%}/s",$found[6]))
     {
         return $found[1];
     }
@@ -195,7 +194,7 @@ $string=preg_replace_callback("/(\{\{ ?for ((\w+)=>)?(\w+) in \[@(.+)] ?}}(.+)\{
         return NULL;
     }
 
-    if (preg_match("/\[@".$found[4]."](\[.+])/", $found[6]))
+    if (preg_match("/\{\{ ?".$found[4]."(\[.+]) ?}}/", $found[6]))
     {
         if ((!isset($myarray[0])) || (!is_array($myarray[0])))
         {
@@ -208,12 +207,12 @@ $string=preg_replace_callback("/(\{\{ ?for ((\w+)=>)?(\w+) in \[@(.+)] ?}}(.+)\{
 
     foreach($myarray as $key=>$element)
     {
-        if (preg_match("/\[@".$found[4]."](\[.+])/", $found[6]))
+        if (preg_match("/\{\{ ?".$found[4]."(\[.+]) ?}}/", $found[6]))
         {
             $innerblock=$found[6];
-            while (preg_match("/\[@".$found[4]."](\[.+])/", $innerblock))
+            while (preg_match("/\{\{ ?".$found[4]."(\[.+]) ?}}/", $innerblock))
             {
-                $innerblock=preg_replace_callback("/\[@".$found[4]."](\[.+])/sU", function($dim) use($element)
+                $innerblock=preg_replace_callback("/\{\{ ?".$found[4]."(\[.+]) ?}}/sU", function($dim) use($element)
                 {
                     return eval('return $element'.$dim[1].';');
                 }, $innerblock, 1);
@@ -222,8 +221,15 @@ $string=preg_replace_callback("/(\{\{ ?for ((\w+)=>)?(\w+) in \[@(.+)] ?}}(.+)\{
         }
         else
         {
-            $string=preg_replace("/\[@".$found[4]."]/", $element, $found[6]);
-            $string=preg_replace("/\[@".$found[3]."]/", $key, $string);
+            $string=preg_replace_callback("/\{\{ ?(".$found[4].")(.+?) ?}}/", function($filters) use($element)
+                {return "{{ ".$element.$filters[2]." }}";}, $found[6]);
+
+            if (!empty($found[3]))
+            {
+                $string=preg_replace_callback("/\{\{ ?(".$found[3].")(.+?) ?}}/", function($filters) use($key)
+                    {return "{{ ".$key.$filters[2]." }}";}, $string);
+            }
+
             $row.=$string;
         }
     }
@@ -238,231 +244,202 @@ private function nested_loop($string)
 {
 $innerfor=NULL;
 $innerblock=NULL;
-$counter=0;
 
-while (preg_match("/\{\{ for (\w+?=>)?\w+ in \[@\w+\] ?}}/", $string))
+while (preg_match("/\{% for (\w+?=>)?\w+ in \{\{ ?.+? ?}} ?%}/", $string))
 {
 $lines=explode("\n", $string);
 
 foreach ($lines as $x)
 {
-    if (preg_match("/\{\{ for (\w+?=>)?\w+ in \[@\w+\] ?}}/", $x))
+    if (preg_match("/\{% for (\w+?=>)?\w+ in \{\{.+? ?}} ?%}/", $x))
     {
         $innerfor=$x;
     }
 
-    if (preg_match("/\{\{ ?endfor ?}}/", $x))
+    if (preg_match("/\{% ?endfor ?%}/", $x))
     {
         break;
     }
 }
 
-$innerblock=preg_replace_callback("~.*(\Q".$innerfor."\E.+?\{\{ ?endfor ?}}).*~s", function ($found)
+$innerblock=preg_replace_callback("~.*(\Q".$innerfor."\E.+?\{ ?endfor ?%}).*~s", function ($found)
     {return $found[1];}, $string);
 
 $processedblock=$this->loop($innerblock);
 $innerblock=preg_quote($innerblock);
 $string=preg_replace("|".$innerblock."|s", $processedblock, $string);
-
-$counter++;
-if ($counter>100) break;
 }
 
 return $string;
 }
 
+// NEW FILTERS
 private function filters($string,$cond=false)
 {
-// DEFAULT STRING SUBSTITUTION
-$string=preg_replace_callback("/\{\{ ?(.+?) ?\| ?default\((.*)\) ?}}/U", function($found)
+$string=preg_replace_callback("/\{\{ ?(.+?) ?}}/", function($found)
 {
-    if (isset($this->values[$found[1]]))
+    if (preg_match("/\|/", $found[1]))
     {
-        return $this->values[$found[1]];
-    }
-    else
-    {
-        return $found[2];
-    }
-}, $string);
+        $filterarray=explode("|", $found[1]);
 
-// ARRAY FUNCTIONS
-$string=preg_replace_callback("/\{\{ ?\[@(.+?)] ?\| ?(
-|count|rand|first|last|min|max|join\((.*)\)|contains\((.*)\)|
-) ?}}/U", function($found)
-{
-    if (is_array($this->values[$found[1]]))
-    {
-        switch ($found[2])
+        $mainvar=trim(array_shift($filterarray));
+
+        if (preg_match("/\[.+?]/", $mainvar))
         {
-            case "count":
-                return count($this->values[$found[1]]);
-                break;
-            case "rand":
-                return array_rand($this->values[$found[1]]);
-                break;
-            case "first":
-                return reset($this->values[$found[1]]);
-                break;
-            case "last":
-                return end($this->values[$found[1]]);
-                break;
-            case "min":
-                return min($this->values[$found[1]]);
-                break;
-            case "max":
-                return end($this->values[$found[1]]);
-                break;
-            case "join($found[3])":
-                return implode($found[3], $this->values[$found[1]]);
-                break;
-            case "contains($found[4])":
-                return in_array($found[4], $this->values[$found[1]]);
-                break;
+            $returnvar=preg_replace_callback("/^(.+?)(\[.+])$/", function($found2)
+                {return @eval('return $this->values["'.$found2[1].'"]'.$found2[2].';');}, $mainvar);
+            if (empty($returnvar))
+            {
+                $default=true;
+            }
+        }
+        else
+        {
+            if (isset($this->values[$mainvar]))
+            {
+                $returnvar=$this->values[$mainvar];
+            }
+            elseif (isset(self::$global_values[trim($mainvar)]))
+            {
+                $returnvar=self::$global_values[trim($mainvar)];
+            }
+            else
+            {
+                $returnvar=$mainvar;
+                $default=true;
+            }
+        }
+
+        foreach ($filterarray as $filter)
+        {
+            $filter=trim($filter);
+
+            if (is_array($returnvar))
+            {
+                switch ($filter)
+                {
+                    case "count":
+                        $returnvar=count($returnvar);
+                        break;
+                    case "rand":
+                        $returnvar=array_rand($returnvar);
+                        break;
+                    case "first":
+                        $returnvar=reset($returnvar);
+                        break;
+                    case "last":
+                        $returnvar=end($returnvar);
+                        break;
+                    case "min":
+                        $returnvar=min($returnvar);
+                        break;
+                    case "max":
+                        $returnvar=end($returnvar);
+                        break;
+                }
+            }
+            elseif (is_numeric($returnvar))
+            {
+                switch ($filter)
+                {
+                    case (preg_match("/^(sin|cos|tan|asin|acos|atan|log|
+                        ceil|floor|round|abs|sqrt|log10|dechex|hexdec|
+                        decoct|octdec|bindec|decbin|str_shuffle)$/", $filter) ? true : false):
+                        $returnvar=@eval("return $filter($returnvar);");
+                        break;
+                }
+            }
+            elseif (is_string($returnvar))
+            {
+                switch ($filter)
+                {
+                    case "uc":
+                        $returnvar=strtoupper($returnvar);
+                        break;
+                    case "ucf":
+                        $returnvar=ucfirst($returnvar);
+                        break;
+                    case "lc":
+                        $returnvar=strtolower($returnvar);
+                        break;
+                    case "lcf":
+                        $returnvar=lcfirst($returnvar);
+                        break;
+                }
+            }
+
+            switch ($filter)
+            {
+                case "md5":
+                    $returnvar=md5($returnvar);
+                    break;
+                case "sha1":
+                    $returnvar=sha1($returnvar);
+                    break;
+                case "sha256":
+                    $returnvar=sha256($returnvar);
+                    break;
+                case "sha384":
+                    $returnvar=sha384($returnvar);
+                    break;
+                case "sha512":
+                    $returnvar=sha512($returnvar);
+                    break;
+                case "crc32":
+                    $returnvar=crc32($returnvar);
+                    break;
+                case (preg_match("/^default ?\(.*?\)$/", $filter) ? true : false):
+                    if (isset($default))
+                    {
+                        $returnvar=preg_replace_callback("/^default ?\((.*?)\)$/", function($found2)
+                            {return $found2[1];}, $filter);
+                    }
+                    break;
+                case "isset":
+                    if (isset($default))
+                    {
+                        $returnvar=0;
+                    }
+                    else
+                    {
+                        $returnvar=1;
+                    }
+            }
         }
     }
     else
     {
-        return "Variable $found[1] is Not an Array!";
+        if (preg_match("/\[.+?]/", trim($found[1])))
+        {
+            $returnvar=preg_replace_callback("/^(.+?)(\[.+])$/", function($found2)
+                {return @eval('return $this->values["'.$found2[1].'"]'.$found2[2].';'); }, $found[1]);
+        }
+        else
+        {
+            if (isset(self::$global_values[trim($found[1])]))
+            {
+                $returnvar=self::$global_values[trim($found[1])];
+            }
+            elseif (isset($this->values[trim($found[1])]))
+            {
+                $returnvar=$this->values[trim($found[1])];
+            }
+            else
+            {
+                $returnvar=trim($found[1]);
+            }
+        }
     }
-}, $string);
-
-// VARIABLE AND ARRAY SUBSTITUTIONS
-if ($cond)
-{
-    $string=$this->cond_subst($string);
-}
-else
-{
-    $string=$this->main_subst($string);
-}
-
-// STRING FUNCTIONS
-if (preg_match("/\{\{.+?}}/", $string))
-{
-    $string=preg_replace_callback("/\{\{ ?(.+) ?\| ?uc ?}}/U", function($found)
-    {return strtoupper($found[1]);}, $string);
-
-    $string=preg_replace_callback("/\{\{ ?(.+) ?\| ?ucf ?}}/U", function($found)
-    {return ucfirst($found[1]);}, $string);
-
-    $string=preg_replace_callback("/\{\{ ?(.+?) ?\| ?lcf ?}}/", function($found)
-    {return lcfirst($found[1]);}, $string);
-
-    $string=preg_replace_callback("/\{\{ ?(.+?) ?\| ?lc ?}}/", function($found)
-    {return strtolower($found[1]);}, $string);
-
-    // MATH FUNCTIONS
-    $string=preg_replace_callback("/\{\{ ?(.+?) ?\| ?(
-    |sin|cos|tan|asin|acos|atan|log|ceil|floor|round|abs|sqrt|log10|dechex|hexdec|decoct|octdec|bindec|decbin|shuffle|
-    ) ?}}/", function($found)
-    {return @eval("return $found[2]($found[1]);") ? @eval("return $found[2]($found[1]);") : "$found[1] is Not valid Number";}, $string);
-
-    // HASH FUNCTIONS
-    $string=preg_replace_callback("/\{\{ ?(.+?) ?\| ?(
-    |md5|sha1|sha256|sha384|sha512|crc32|
-    ) ?}}/", function($found)
-    {return @eval("return hash($found[2],$found[1]);") ? @eval("return hash($found[2],$found[1]);") : "$found[1] is Not valid Number";}, $string);
-}
-return $string;
-}
-
-private function main_subst($string)
-{
-
-$string=preg_replace_callback("/\[@(.+)]((\[.+]){2,})/", function($found)
-{
-    $localvar=eval('return $this->values[$found[1]]'."$found[2];");
-    $globalvar=eval('return self::$global_values[$found[1]]'."$found[2];");
-    if (isset($localvar))
-    {
-        return eval('return $this->values[$found[1]]'."$found[2];");
-    }
-    elseif (isset($globalvar))
-    {
-        return eval('return self::$global_values[$found[1]]'."$found[2];");
-    }
-    else return NULL;
-}, $string);
-
-$string=preg_replace_callback("/\[@(.+)]\[(.+)]/U", function($found)
-{
-    if (isset($this->values[$found[1]][$found[2]]))
-    {
-        return $this->values[$found[1]][$found[2]];
-    }
-    elseif (isset(self::$global_values[$found[1]][$found[2]]))
-    {
-        return self::$global_values[$found[1]][$found[2]];
-    }
-    else return NULL;
-}, $string);
-
-$string=preg_replace_callback("/\[@(.+)]/U", function($found)
-{
-    if (isset($this->values[$found[1]]))
-    {
-        return $this->values[$found[1]];
-    }
-    elseif (isset(self::$global_values[$found[1]]))
-    {
-        return self::$global_values[$found[1]];
-    }
-    else return NULL;
-}, $string);
-return $string;
-}
-
-private function cond_subst($string)
-{
-
-$string=preg_replace_callback("/\[@(.+)]((\[.+]){2,})/", function($found)
-{
-    $localvar=eval('return $this->values[$found[1]]'."$found[2];");
-    $globalvar=eval('return self::$global_values[$found[1]]'."$found[2];");
-    if (isset($localvar))
-    {
-        return eval('return $this->values[$found[1]]'."$found[2];");
-    }
-    elseif (isset($globalvar))
-    {
-        return eval('return self::$global_values[$found[1]]'."$found[2];");
-    }
-    else return NULL;
-}, $string);
-
-$string=preg_replace_callback("/\[@(.+)]\[(.+)]/U", function($found)
-{
-    if (isset($this->values[$found[1]][$found[2]]))
-    {
-        return '$this->values['.$found[1].']['.$found[2].']';
-    }
-    elseif (isset(self::$global_values[$found[1]][$found[2]]))
-    {
-        return 'self::$global_values['.$found[1].']['.$found[2].']';
-    }
-    else return NULL;
-}, $string);
-
-$string=preg_replace_callback("/\[@(.+)]/U", function($found)
-{
-    if (isset($this->values[$found[1]]))
-    {
-        return '$this->values["'.$found[1].'"]';
-    }
-    elseif (isset(self::$global_values[$found[1]]))
-    {
-        return 'self::$global_values["'.$found[1].'"]';
-    }
-    else return NULL;
+return $returnvar;
 }, $string);
 
 return $string;
 }
 
+// ADD VARS
 private function add_vars($string)
 {
-$string=preg_replace_callback("/\{\{ ?(global)? var (.+?)=(.+?) ?}}/", function($found)
+$string=preg_replace_callback("/\{% ?(global)? var (.+?)=(.+?) ?%}/", function($found)
 {
     $names=preg_replace("/\s/", "", $found[2]);
     $names=explode(",", $names);
@@ -487,9 +464,10 @@ return NULL;}, $string);
 return $string;
 }
 
+// ADD ARRAY
 private function add_array($string)
 {
-$string=preg_replace_callback("/\{\{ ?(global)? array (\w+?)= ?\[(.+?)\] ?}}/", function($found)
+$string=preg_replace_callback("/\{% ?(global)? array (\w+?)= ?\[(.+?)\] ?%}/", function($found)
 {
     $arrayname=preg_replace("/\s/", "", $found[1]);
     $arrayname=explode(",", $arrayname);
@@ -518,10 +496,10 @@ return $string;
 
 private function include_template($string)
 {
-$string=preg_replace_callback("/\{\{ ?include '(.+?)' ?}}/", function($found)
+$string=preg_replace_callback("/\{% ?include '(.+?)' ?%}/", function($found)
 {
     // substitue variables
-    $found[1]=$this->main_subst($found[1]);
+    $found[1]=$this->filters($found[1]);
     $newfile=NULL;
     if (file_exists($found[1]))
     {
@@ -536,7 +514,7 @@ $string=preg_replace_callback("/\{\{ ?include '(.+?)' ?}}/", function($found)
     }
 return $newfile;}, $string);
 
-if (preg_match("/\{\{ ?include '(.+?)' ?}}/", $string))
+if (preg_match("/\{% ?include '(.+?)' ?%}/", $string))
 {
 $string=$this->include_template($string);
 }
@@ -553,7 +531,7 @@ return $string;
 
 private function add_macro($string)
 {
-$string=preg_replace_callback("/\{\{ ?macro (\w+?)\((.+?)\) ?}}(.+?){{ ?endmacro ?}}/s", function($found)
+$string=preg_replace_callback("/\{% ?macro (\w+?)\((.+?)\) ?%}(.+?){% ?endmacro ?%}/s", function($found)
 {
     $temparray=preg_replace("/\s/", "", $found[2]);
     $temparray=explode(",", $temparray);
@@ -566,7 +544,7 @@ return $string;
 
 private function call_macro($string)
 {
-$string=preg_replace_callback("/\{\{ ?call (\w+?)\((.+?)\) ?}}/", function($found)
+$string=preg_replace_callback("/\{% ?call (\w+?)\((.+?)\) ?%}/", function($found)
 {
     $temparray=preg_replace("/,\s*?/", ",", $found[2]);
     $temparray=explode(",", $temparray);
@@ -603,7 +581,7 @@ foreach ($this->properties as $key=>$propname)
     $this->values[$propname]=$property_values[$key];
 }
 
-$return_string=preg_replace_callback("/\[@(.+?)]/", function($found)
+$return_string=preg_replace_callback("/\{\{ ?(.+?) ?}}/", function($found)
 {
     return $this->values[$found[1]];}, $this->body);
 return $return_string;
