@@ -2,11 +2,15 @@
 PHP Template Engine
 
 # Description
-Jellyfish is a very simple and useful PHP template engine, based on PCRE substitutions. It works in the following PHP versions:
-5.3, 5.4, 5.5, 5.6, 7.0 and above
+Jellyfish is a very simple and useful PHP template engine, based on PCRE substitutions. The syntax is similar to Jinja2. It works in PHP 5.3 or above.
 
 # Structure
 Jellyfish builds output from a dynamic PHP file and a static template file. With this structure, you can separate your site's frontend and backend pages.
+
+# Syntax
+Actually there are two types of template code:
+- ```{{ ... }}``` for expressions (output variables, arrays, etc.)
+- ```{% ... %}``` for statements (conditions, loops, includes, etc.)
 
 # Usage
 Just include the template.php. Then create a new template object. Only one parameter needed: the file of the static template file.
@@ -28,7 +32,7 @@ $x="testvar";
 $page->set("myvar2", $x);
 
 # Add array to engine
-$myarr=array("abc", "def", "ghi", 12);
+$myarr=array("abc", "def", "ghi", array(1, 2, 3));
 $page->set("myvar3", $myarr);
 
 # Add multidimensional array to engine
@@ -49,12 +53,13 @@ That's all!
 Jellyfish supports some of useful template methods, like inner functions, conditions or loops. To use this, create a simple file, for example in html format.
 
 ## Variables
-From the previous example, we will use those template variables. You can refer to a variable with the [@varname] syntax.
+From the previous example, we will use those template variables. You can refer to a variable with the {{ varname }} syntax.
+The whitespaces don't matter.
 
 Example:
 ```
 ...
-<b>[@myvar]</>
+<b>{{ myvar }}</>
 ...
 ```
 The engine will generate the following output:
@@ -69,8 +74,8 @@ You can use variables everywhere in template files.
 Example:
 ```
 <ul>
-<li>[@myvar]</li>
-<li>[@myvar2]</li>
+<li>{{ myvar }}</li>
+<li>{{myvar2}}</li>
 </ul>
 ```
 This will generate the following output:
@@ -86,28 +91,30 @@ These blocks are not sensitive to whitespaces.
 
 Example 1:
 ```
-{{ var x = 15 }}
+{% var x = 15 %}
 ```
-Now you can call [@x] variable everywhere
+Now you can call {{ x }} variable everywhere
 
 Example 2:
 ```
-{{ var a,b,c=10,test,test2 }}
+{% var a,b,c=10,test,test2 %}
 ```
 Now you can use all of created variables in template.
 
 ## Array elements
-Same as simple variables, you can use array elements everywhere. Don't forget the index.
+Same as simple variables, you can use array elements everywhere. Don't forget the index. You can call multidimensional arrays too.
 
 Example:
 ```
-[@myvar3][0]<br />
-[@myvar3][2]<br />
+{{ myvar3[0] }}<br />
+{{ @myvar3[2] }}<br />
+{{ @myvar[3][1]<br />
 ```
 This will generate the following output:
 ```
 abc<br />
 ghi<br />
+2<br />
 ```
 
 There is possible to define simple arrays in template file. First these blocks run, so you can use the added arrays before the declaration.
@@ -115,17 +122,17 @@ These blocks are not sensitive to whitespaces.
 
 Example:
 ```
-{{ array test=[10,35,text1,74] }}
+{% array test=[10,35,text1,74] %}
 ```
-Now you can use [@test] array.
+Now you can use {{ test }} array.
 
 ## Multidimensional arrays
 This is the same as simple arrays, just print all of indexes.
 
 Example:
 ```
-<i>[@myvar4][0][2]</i>
-<u>[@myvar4][1][1]</u>
+<i>{{ myvar4[0][2] }}</i>
+<u>{{ myvar4[1][1] }}</u>
 ```
 This will generate the following output:
 ```
@@ -147,33 +154,35 @@ You can define global variables and arrays from template. Use the "global" keywo
 
 Example:
 ```
-{{ global var x=100 }}
+{% global var x=100 %}
 ```
 
-[@x] variable will be a global variable.
+{{ x }} variable will be a global variable.
 
 Example:
 ```
-{{ global array nums=[1,2,3,4,5,6] }}
+{% global array nums=[1,2,3,4,5,6] %}
 ```
 
 ## Built in functions
-Jellyfish supports some simple functions. You can call these in template file with a special string: {{ [@variable] | function}}
+Jellyfish supports some simple functions. You can call these in template file with the "|" character. The chained functions are also supported.
 The function blocks are not sensitive to whitespaces.
 
 Example:
 ```
-<div>{{ [@myvar3][3] | sin }}</div>
+<div>{{ myvar3[3] | sin }}</div>
 ```
 This will generate the following output:
 ```
 <div>-0.53657291800043</div>
 ```
 
-Actually you can not use multiple functions on a variable. The following code DOESN'T work:
+You can use multiple functions on a variable. The following code works also:
 ```
-{{ [@myvar3][3] | sin | cos }}
+{{ myvar3[3] | sin | cos }}
 ```
+First substitute variable, then calculate the variable's sinus, then calculate cosinus on return value.
+
 
 ## Supported functions
 ### Math functions
@@ -199,9 +208,9 @@ Actually you can not use multiple functions on a variable. The following code DO
 
 Example:
 ```
-{{[@variable]|round}} // returns rounded value
-{{ [@variable] | sqrt }} // returns square root value
-{{[@variable] | cos}} // returns cosinus value
+{{variable|round}} // returns rounded value
+{{ variable | sqrt }} // returns square root value
+{{variable | cos | decbin }} // returns cosinus value, then convert to binary
 ```
 
 ### String functions
@@ -213,8 +222,8 @@ Example:
 
 Example:
 ```
-{{[@variable]| uc}} // converts fully uppercase
-{{ [@variable] | shuffle }} // shuffles characters randomly
+{{variable| uc}} // converts fully uppercase
+{{ variable | shuffle }} // shuffles characters randomly
 ```
 
 ### Hash functions
@@ -227,8 +236,8 @@ Example:
 
 Example:
 ```
-{{[@variable]| md5 }} // returns md5 value
-{{[@variable] | sha256 }} // returns sha256 value
+{{variable| md5 }} // returns md5 value
+{{variable | sha256 }} // returns sha256 value
 ```
 
 
@@ -239,32 +248,30 @@ Example:
 - last - returns the last element from array
 - min - returns the lowest element from array
 - max - returns the highest element from array
-- join(string) - Joins all elements from array, separated with string parameter
-- contains(string) - returns true if string value found in array, else returns false
 
 Example:
 ```
-{{ [@variable] | count }} // returns number of elements
-{{ [@variable] | join(-) }} // returns all elements of array, separated with "-"
+{{ variable | count }} // returns number of elements
+{{ variable | rand }} // returns a random element from array
 ```
 ### Other functions
 - default - set default value to a variable, if it doesn't exist
 
 Example:
 ```
-{{ [@variable] | default(abcde) }}
+{{ variable | default(abcde) }}
 ```
 
 ## Conditions
-Jellyfish supports basic conditional blocks in template. If the condition's final value is true, the content between the {{ if }} and {{ endif }} will be printed to the output. Else print nothing. Optionally you can use elseif and else statements. In these case, the string between {{ elseif }} blocks or {{ else }} and {{ endif }} will be printed, like any programming languages. In the condition section, the engine uses the PHP's eval() function, so you can use simple tests, like (10>2), or built-in PHP functions. Of course, you can test your template variables and array elements too. The conditional blocks have a special synthax. See below:
+Jellyfish supports basic conditional blocks in template. If the condition's final value is true, the content between the {% if %} and {% endif %} will be printed to the output. Else print nothing. Optionally you can use elseif and else statements. In these case, the string between {% elseif %} blocks or {% else %} and {% endif %} will be printed, like any programming languages. In the condition section, the engine uses the PHP's eval() function, so you can use simple tests, like (10>2), or built-in PHP functions. Of course, you can test your template variables and array elements too. The conditional blocks have a special synthax. See below:
 The condition blocks are not sensitive to whitespaces.
 You can use nested conditions unlimited.
 
 Example 1:
 ```
-{{ if (10>5) }}
+{% if (10>5) %}
 <u><b>It's true</u></b>
-{{ endif }}
+{% endif %}
 
 ```
 Because the test's value is true, this will generate the following output:
@@ -274,10 +281,10 @@ Because the test's value is true, this will generate the following output:
 
 Example 2:
 ```
-{{ if (2<=5) }}
+{% if (2<=5) %}
 <b>Printed text1</u>
 <div>Printed text2</div>
-{{endif}}
+{%endif%}
 ```
 Because the test's value is true, this will generate the following output:
 ```
@@ -289,11 +296,11 @@ Of course, you can use your own template variables:
 
 Example 3:
 ```
-{{ if ([@variable]=="aaa") }}
-<li>{{ [@variable] | uc }}</li>
-{{ else }}
+{% if ({{ @variable }} =="aaa") }}
+<li>{{ variable | uc }}</li>
+{% else %}
 <li>Default value</li>
-{{endif}}
+{%endif%}
 ```
 In this case, if the @variable's value is "aaa", then printed with fully uppecase format. Else, the following string will be printed:
 ```
@@ -304,15 +311,15 @@ You can use "elseif" statements with no limit. The final "else" is not required:
 
 Example 4:
 ```
-{{ if ([@variable]==0) }}
+{% if ({{ variable }} ==0) %}
 <li>zero</li>
-{{ elseif ([@variable]>0) }}
+{% elseif ({{ variable }} > 0) %}
 <li>positive</li>
-{{ elseif ([@variable]<0) }}
+{% elseif ({{ variable<0) %}
 <li>negative</li>
-{{ else }}
+{% else %}
 <li>Not a number</li>
-{{endif}}
+{%endif%}
 ```
 In this case, we run multiple test on variable. We first check if it is 0. If not, we check if is it positive or negative number. If not, finally we print that variable is not a number.
 
@@ -320,18 +327,18 @@ You can use multiple tests, if needed:
 
 Example 5:
 ```
-{{ if (([@element]>5) && ([@other_variable]<10)) }}
+{% if (({{ element }} >5) && ({{ other_variable }} <10)) %}
 Multiple conditions working!
-{{ endif }}
+{% endif %}
 ```
 
 You can use built-in functions in the conditions.
 
 Example 6:
 ```
-{{ if ({{ [@number] | sqrt }}>3) }}
+{% if ({{ number | sqrt }}>3) %}
 Printed text
-{{ endif }}
+{% endif %}
 ```
 In this case, Jellyfish first calculates the square root of @number, then run tests. If the value greater then 3, the block's content will be printed.
 
@@ -341,9 +348,9 @@ With for loop, you can iterate over template arrays. It works for simple and mul
 Example 1:
 If you have an arry, named "myarray", with following elements: 1, 2, 3, 4, 5
 ```
-{{ for element in [@myarray]}}
-<li>[@element]</li>
-{{endfor}}
+{% for element in {{ myarray }} %}
+<li>{{ element }}</li>
+{%endfor%}
 ```
 This will generate the following output:
 ```
@@ -355,11 +362,12 @@ This will generate the following output:
 ```
 
 Example 2:
+You can use the indexes too, if you want. In the next example, we will use "key" to print indexes, and "item" to print elements.
 If you have an array, named "myarray2" with following elements: a,b,c,d,e,f
 ```
-{{ for key=>item in [@myarray2]}}
-<b>[@key]->[@item]</b>
-{{endfor}}
+{% for key=>item in {{ myarray2 }} %}
+<b>{{key}}->{{item}}</b>
+{%endfor%}
 ```
 This will generate the following output:
 ```
@@ -374,9 +382,9 @@ This will generate the following output:
 Example 3:
 If you have a string, named "string", and value: "value":
 ```
-{{ for char in [@string]}}
-<i>[@char]</i>
-{{endfor}}
+{% for char in {{ string }} %}
+<i>{{char}}</i>
+{%endfor%}
 ```
 This will generate the following output:
 ```
@@ -393,7 +401,7 @@ You can include another template files. The included templates parsed too, like 
 
 Example:
 ```
-{{ include 'other_template.tpl' }}
+{% include 'other_template.tpl' %}
 ```
 
 ## Macros
@@ -402,15 +410,15 @@ The macro blocks are not sensitive to whitespaces.
 
 Example:
 ```
-{{ macro formatted_text(color, size, face, text) }}
-<font color="[@color]" face="[@face]" size=[@size]>[@text]</font>
-{{ endmacro }}
+{% macro formatted_text(color, size, face, text) %}
+<font color="{{color}}" face="{{face}}" size=[{{size}}>{{text}}</font>
+{% endmacro %}
 ```
 Now you can use this macro with 'call' block:
 
 Example:
 ```
-{{ call formatted_text(red,12, Arial, Custom text) }}
+{% call formatted_text(red,12, Arial, Custom text) %}
 ```
 This will generate the following output:
 ```
