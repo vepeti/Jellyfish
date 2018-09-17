@@ -165,7 +165,7 @@ Example:
 ```
 
 ## Built in functions
-Jellyfish supports some simple functions. You can call these in template file with the "|" character. The chained functions are also supported.
+Jellyfish supports some simple functions. You can call these in template file with the "|" character. The chained functions are also supported. You can use them in conditions and loops too.
 The function blocks are not sensitive to whitespaces.
 
 Example:
@@ -219,11 +219,15 @@ Example:
 - ucf - converts variable's first letter to uppercase
 - lcf - converts variable's first letter to lowercase
 - shuffle - shuffles the letters in variable
+- length - returns the length of variable
+- repeat(n) - repeats the variable n times
+- search(string) - search string in variable. Returns the found position or NULL
 
 Example:
 ```
 {{variable| uc}} // converts fully uppercase
 {{ variable | shuffle }} // shuffles characters randomly
+{{ variable | repeat(2) | md5 }} // repeat variable 2 times, then returns the md5 value
 ```
 
 ### Hash functions
@@ -248,11 +252,22 @@ Example:
 - last - returns the last element from array
 - min - returns the lowest element from array
 - max - returns the highest element from array
+- sort - returns the sorted array
+- reverse - returns the reversed array
+- ksort - returns the key sorted array
+- krsort - returns the reverse key sorted array
+- shuffle - returns a random order of array
+- unique - remove duplicates from array
+- join(string) - concatenate array elements, using string between them
+- search(string) - check if string found in elements of array. Returns 1 or NULL
+- keysearch(string) - check if string found in keys of array. Returns 1 or NULL
+
 
 Example:
 ```
-{{ variable | count }} // returns number of elements
-{{ variable | rand }} // returns a random element from array
+{{ myarray | count }} // returns number of elements
+{{ myarray | reverse }} // returns a reversed array
+{{ myarray | sort | last }} // first sorts the array, then returns the last element
 ```
 ### Other functions
 - default - set default value to a variable, if it doesn't exist
