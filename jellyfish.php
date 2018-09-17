@@ -3,6 +3,7 @@
 class template
 {
 protected $file;
+protected $looparray = array();
 protected $values = array();
 protected $macros = array();
 protected static $global_values = array();
@@ -134,6 +135,7 @@ $string=preg_replace_callback("/(\{% ?if ?(\(.+?\)) ?%}(.+?)\{% ?endif ?%})/s", 
         {
             preg_match_all("/\{% ?elseif ?\(.+?\) ?%}/s", $found[3], $matches);
             $matches=$matches[0];
+
             foreach ($matches as $block)
             {
                 $condstring=preg_replace_callback("/^.+(\(.+\)).+$/", function ($innerfound)
@@ -151,7 +153,7 @@ $string=preg_replace_callback("/(\{% ?if ?(\(.+?\)) ?%}(.+?)\{% ?endif ?%})/s", 
 
                 if ($cond)
                 {
-                    $truestring=preg_replace_callback("/^.*\Q".$block."\E(.+?)(\{\{ ?else.*)?$/s", function ($innerstring)
+                    $truestring=preg_replace_callback("/^.*\Q".$block."\E(.+?)(\{% ?else.*)?$/s", function ($innerstring)
                         {return $innerstring[1];}, $found[3]);
                     return $truestring;
                 }
@@ -172,7 +174,7 @@ return $string;
 // LOOP
 private function loop($string)
 {
-$string=preg_replace_callback("/(\{% ?for ((\w+?)=>)?(\w+?) in \{\{ ?(.+?) ?}} ?%}(.+?)\{% ?endfor ?%})/s", function($found)
+$string=preg_replace_callback("/(\{% ?for ((\w+?)=>)?(\w+?) in (\{\{ ?.+? ?}}) ?%}(.+?)\{% ?endfor ?%})/s", function($found)
 {
     if (preg_match("/\{% for (\w+?=>)?\w+ in \{\{ ?\w+? ?}} ?%}/s",$found[6]))
     {
@@ -180,13 +182,16 @@ $string=preg_replace_callback("/(\{% ?for ((\w+?)=>)?(\w+?) in \{\{ ?(.+?) ?}} ?
     }
 
     $row=NULL;
-    if (!is_array($this->values[$found[5]]))
+
+    $myarray=$this->filters($found[5]);
+
+    if ($myarray!="Array")
     {
         $myarray=str_split($this->values[$found[5]]);
     }
     else
     {
-        $myarray=$this->values[$found[5]];
+        $myarray=$this->looparray;
     }
 
     if ((count($myarray)==1) && (isset($myarray[0])) && ($myarray[0]==""))
@@ -322,7 +327,7 @@ $string=preg_replace_callback("/\{\{ ?(.+?) ?}}/", function($found)
                         $returnvar=count($returnvar);
                         break;
                     case "rand":
-                        $returnvar=array_rand($returnvar);
+                        $returnvar=$returnvar[array_rand($returnvar)];
                         break;
                     case "first":
                         $returnvar=reset($returnvar);
@@ -336,6 +341,36 @@ $string=preg_replace_callback("/\{\{ ?(.+?) ?}}/", function($found)
                     case "max":
                         $returnvar=end($returnvar);
                         break;
+                    case "sort":
+                        sort($returnvar);
+                        break;
+                    case "ksort":
+                        ksort($returnvar);
+                        break;
+                    case "krsort":
+                        krsort($returnvar);
+                        break;
+                    case "reverse":
+                        rsort($returnvar);
+                        break;
+                    case "shuffle":
+                        shuffle($returnvar);
+                        break;
+                    case "unique":
+                        $returnvar=array_unique($returnvar);
+                        break;
+                    case (preg_match("/^join ?\(.*?\)$/", $filter) ? true : false):
+                        $returnvar=preg_replace_callback("/^join ?\((.*?)\)$/", function($found2) use($returnvar)
+                            {return implode($found2[1], $returnvar);}, $filter);
+                        break;
+                    case (preg_match("/^search ?\(.*?\)$/", $filter) ? true : false):
+                        $returnvar=preg_replace_callback("/^search ?\((.*?)\)$/", function($found2) use($returnvar)
+                            {return in_array($found2[1], $returnvar);}, $filter);
+                        break;
+                    case (preg_match("/^keysearch ?\(.*?\)$/", $filter) ? true : false):
+                        $returnvar=preg_replace_callback("/^keysearch ?\((.*?)\)$/", function($found2) use($returnvar)
+                            {return array_key_exists($found2[1], $returnvar);}, $filter);
+                        break;
                 }
             }
             elseif (is_numeric($returnvar))
@@ -344,7 +379,7 @@ $string=preg_replace_callback("/\{\{ ?(.+?) ?}}/", function($found)
                 {
                     case (preg_match("/^(sin|cos|tan|asin|acos|atan|log|
                         ceil|floor|round|abs|sqrt|log10|dechex|hexdec|
-                        decoct|octdec|bindec|decbin|str_shuffle)$/", $filter) ? true : false):
+                        decoct|octdec|bindec|decbin)$/", $filter) ? true : false):
                         $returnvar=@eval("return $filter($returnvar);");
                         break;
                 }
@@ -364,6 +399,20 @@ $string=preg_replace_callback("/\{\{ ?(.+?) ?}}/", function($found)
                         break;
                     case "lcf":
                         $returnvar=lcfirst($returnvar);
+                        break;
+                    case (preg_match("/^repeat ?\(\d+?\)$/", $filter) ? true : false):
+                        $returnvar=preg_replace_callback("/^repeat ?\((\d+?)\)$/", function($found2) use($returnvar)
+                            {return str_repeat($returnvar, $found2[1]);}, $filter);
+                        break;
+                    case "shuffle":
+                        $returnvar=str_shuffle($returnvar);
+                        break;
+                    case "length":
+                        $returnvar=strlen($returnvar);
+                        break;
+                    case (preg_match("/^search ?\(.*?\)$/", $filter) ? true : false):
+                        $returnvar=preg_replace_callback("/^search ?\((.*?)\)$/", function($found2) use($returnvar)
+                            {return strpos($returnvar, $found2[1]);}, $filter);
                         break;
                 }
             }
@@ -430,6 +479,14 @@ $string=preg_replace_callback("/\{\{ ?(.+?) ?}}/", function($found)
             }
         }
     }
+
+if (is_array($returnvar))
+{
+    $this->looparray=NULL;
+    $this->looparray=$returnvar;
+    $returnvar="Array";
+}
+
 return $returnvar;
 }, $string);
 
