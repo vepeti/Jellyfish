@@ -108,7 +108,7 @@ Example:
 ```
 {{ myvar3[0] }}<br />
 {{ @myvar3[2] }}<br />
-{{ @myvar[3][1]<br />
+{{ @myvar[3][1] }}<br />
 ```
 This will generate the following output:
 ```
