@@ -107,8 +107,8 @@ Same as simple variables, you can use array elements everywhere. Don't forget th
 Example:
 ```
 {{ myvar3[0] }}<br />
-{{ @myvar3[2] }}<br />
-{{ @myvar[3][1] }}<br />
+{{ myvar3[2] }}<br />
+{{ myvar[3][1] }}<br />
 ```
 This will generate the following output:
 ```
@@ -311,13 +311,13 @@ Of course, you can use your own template variables:
 
 Example 3:
 ```
-{% if ({{ @variable }} =="aaa") }}
+{% if ({{ variable }} =="aaa") }}
 <li>{{ variable | uc }}</li>
 {% else %}
 <li>Default value</li>
 {%endif%}
 ```
-In this case, if the @variable's value is "aaa", then printed with fully uppecase format. Else, the following string will be printed:
+In this case, if the variable's value is "aaa", then printed with fully uppecase format. Else, the following string will be printed:
 ```
 <li>Default value</li>
 ```
@@ -355,7 +355,7 @@ Example 6:
 Printed text
 {% endif %}
 ```
-In this case, Jellyfish first calculates the square root of @number, then run tests. If the value greater then 3, the block's content will be printed.
+In this case, Jellyfish first calculates the square root of number, then run tests. If the value greater then 3, the block's content will be printed.
 
 ## For loops
 With for loop, you can iterate over template arrays. It works for simple and multidimensional arrays too. You can use two types of for. The first doesn't use key variable, the second does. Built-in functions and conditions works too inside the loop's block. You can use custom names for loop variable and key. If you loop a single variable instead array, Jellyfish splits to characters, and loop over them. Nested loops are supported too.
