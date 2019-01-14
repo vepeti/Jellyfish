@@ -30,6 +30,9 @@ if (!file_exists($this->file))
 }
 $output = file_get_contents($this->file);
 
+// COMMENT
+$output=$this->comment($output);
+
 // ADD VARS
 $output=$this->add_vars($output);
 
@@ -607,6 +610,12 @@ $string=preg_replace_callback("/\{% ?call (\w+?)\((.+?)\) ?%}/", function($found
     $temparray=explode(",", $temparray);
     $inserted=isset($this->macros[$found[1]]) ? $this->macros[$found[1]]->call($found[1], $temparray) : NULL;
 return $inserted;}, $string);
+return $string;
+}
+
+private function comment($string)
+{
+$string=preg_replace("/\{#.*#}/s", NULL, $string);
 return $string;
 }
 
