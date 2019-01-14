@@ -11,6 +11,7 @@ Jellyfish builds output from a dynamic PHP file and a static template file. With
 Actually there are two types of template code:
 - ```{{ ... }}``` for expressions (output variables, arrays, etc.)
 - ```{% ... %}``` for statements (conditions, loops, includes, etc.)
+- ```{# ... #}``` for comments
 
 # Usage
 Just include the template.php. Then create a new template object. Only one parameter needed: the file of the static template file.
